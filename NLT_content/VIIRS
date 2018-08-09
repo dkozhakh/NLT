@@ -1,0 +1,171 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var imageCollection = ee.ImageCollection("NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG"),
+    table = ee.FeatureCollection("users/dkozhakh/usbg10_test"),
+    Harvey = ee.FeatureCollection("users/dkozhakh/Harvey2017_points"),
+    Harvey_lines = ee.FeatureCollection("users/dkozhakh/Harvey2017_lines"),
+    geometry = /* color: #98ff00 */ee.Geometry.Polygon(
+        [[[-97.25000443496128, 27.18511560845119],
+          [-94.3389279159295, 29.012279719195988],
+          [-92.06991604340152, 29.29514934331835],
+          [-88.48786802949928, 28.823727920734388],
+          [-90.62685306590095, 33.10847272867774],
+          [-99.1199279979503, 30.723738014665763]]]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// CREATING LAYERS FOR THE US AND PUERTO RICO
+
+var countries = ee.FeatureCollection('ft:1tdSwUL7MVpOauSgRzqVTOwdfy17KDbw-1d9omPw');
+print(countries);
+var usa = countries.filterMetadata('Country', 'equals', 'United States');
+var pr = countries.filterMetadata('Country','equals','Puerto Rico');
+Map.centerObject(usa, 5);
+
+
+//var VIIRS_total = VIIRS_2018_PR.and(VIIRS_2018_USA); WHY IT DOESNT WORK???
+//Map.addLayer(VIIRS_total,{},'VIIRS total');
+
+// MAPPING VIIRS FOR JULY 2017
+
+var Harvey_July2017 = ee.Image('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG/20170701');
+var July17avgrad = Harvey_July2017.select('avg_rad').clip(usa);
+Map.addLayer(July17avgrad,{},'VIIRS July 2017');
+
+/*var PR_July2017 = Harvey_July2017.clip(pr);
+var USA_July2017 = Harvey_July2017.clip (usa);
+Map.addLayer(USA_July2017,{},'VIIRS 2017 July USA');
+Map.addLayer(PR_July2017,{},'VIIRS 2017 July Puerto Rico');
+*/
+
+Export.image.toDrive({
+  image: July17avgrad,
+  description: 'July17avgrad',
+  scale: 15,
+  maxPixels: 4526135143,
+  region: geometry
+});
+
+// MAPPING VIIRS FOR AUGUST 2017
+
+var Harvey_August2017 = ee.Image('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG/20170801');
+var Aug17avgrad = Harvey_August2017.select('avg_rad').clip(usa);
+Map.addLayer(Aug17avgrad,{},'VIIRS August 2017');
+
+/*
+var PR_August2017 = Harvey_August2017.clip(pr);
+var USA_August2017 = Harvey_August2017.clip (usa);
+Map.addLayer(USA_August2017,{},'VIIRS 2017 Aug USA');
+Map.addLayer(PR_August2017,{},'VIIRS 2017 Aug Puerto Rico');
+*/
+
+Export.image.toDrive({
+  image: Aug17avgrad,
+  description: 'Aug17avgrad',
+  scale: 15,
+  maxPixels: 4526135143,
+  region: geometry
+});
+
+// MAPPING VIIRS FOR SEPTEMBER 2017
+var Harvey_Sep2017 = ee.Image('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG/20170901');
+var Sep17avgrad = Harvey_Sep2017.select('avg_rad').clip(usa);
+Map.addLayer(Sep17avgrad,{},'VIIRS September 2017');
+
+/*
+var PR_Sep2017 = Harvey_Sep2017.clip(pr);
+var USA_Sep2017 = Harvey_Sep2017.clip (usa);
+Map.addLayer(USA_Sep2017,{},'VIIRS 2017 Sep USA');
+Map.addLayer(PR_Sep2017,{},'VIIRS 2017 Sep Puerto Rico');
+*/
+
+Export.image.toDrive({
+  image: Sep17avgrad,
+  description: 'Sep17avgrad',
+  scale: 15,
+  maxPixels: 4526135143,
+  region: geometry
+});
+
+
+// MAPPING VIIRS FOR OCTOBER 2017
+var Harvey_Oct2017 = ee.Image('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG/20171001');
+var Oct17avgrad = Harvey_Oct2017.select('avg_rad').clip(usa);
+Map.addLayer(Oct17avgrad,{},'VIIRS October 2017');
+
+Export.image.toDrive({
+  image: Oct17avgrad,
+  description: 'Oct17avgrad',
+  scale: 15,
+  maxPixels: 4526135143,
+  region: geometry
+});
+
+/*
+var PR_Oct2017 = Harvey_Oct2017.clip(pr);
+var USA_Oct2017 = Harvey_Oct2017.clip (usa);
+Map.addLayer(USA_Oct2017,{},'VIIRS 2017 Oct USA');
+Map.addLayer(PR_Oct2017,{},'VIIRS 2017 Oct Puerto Rico');
+*/
+
+
+// MAPPING VIIRS FOR November 2017
+var Harvey_Nov2017 = ee.Image('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG/20171101');
+var Nov17avgrad = Harvey_Nov2017.select('avg_rad').clip(usa);
+Map.addLayer(Nov17avgrad,{},'VIIRS November 2017');
+
+Export.image.toDrive({
+  image: Nov17avgrad,
+  description: 'Nov17avgrad',
+  scale: 15,
+  maxPixels: 4526135143,
+  region: geometry
+});
+
+/*
+var PR_Nov2017 = Harvey_Nov2017.clip(pr);
+var USA_Nov2017 = Harvey_Nov2017.clip (usa);
+Map.addLayer(USA_Nov2017,{},'VIIRS 2017 Nov USA');
+Map.addLayer(PR_Nov2017,{},'VIIRS 2017 Nov Puerto Rico');
+*/
+
+
+// MAPPING VIIRS FOR December 2017
+var Harvey_Dec2017 = ee.Image('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG/20171201');
+var Dec17avgrad = Harvey_Dec2017.select('avg_rad').clip(usa);
+Map.addLayer(Dec17avgrad,{},'VIIRS December 2017');
+
+Export.image.toDrive({
+  image: Dec17avgrad,
+  description: 'Dec17avgrad',
+  scale: 15,
+  maxPixels: 4526135143,
+  region: geometry
+});
+
+/*
+var PR_Dec2017 = Harvey_Dec2017.clip(pr);
+var USA_Dec2017 = Harvey_Dec2017.clip (usa);
+Map.addLayer(USA_Dec2017,{},'VIIRS 2017 Dec USA');
+Map.addLayer(PR_Dec2017,{},'VIIRS 2017 Dec Puerto Rico');
+*/
+
+// MAPPING VIIRS FOR MAY 2018
+var Harvey_May2018 = ee.Image('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG/20180501');
+var May2018avgrad = Harvey_May2018.select('avg_rad').clip(usa);
+Map.addLayer(May2018avgrad,{},'VIIRS May 2018');
+
+Export.image.toDrive({
+  image: May2018avgrad,
+  description: 'May2018avgrad',
+  scale: 15,
+  maxPixels: 4526135143,
+  region: geometry
+});
+
+/*
+var VIIRS_2018_PR = Harvey_May2018.clip(pr);
+var VIIRS_2018_USA = Harvey_May2018.clip (usa);
+Map.addLayer(VIIRS_2018_USA,{},'VIIRS 2018 May USA');
+Map.addLayer(VIIRS_2018_PR,{},'VIIRS 2018 May Puerto Rico');
+*/
+
+// ADDING HARVEY TRACK
+Map.addLayer(Harvey,{},'Harvey');

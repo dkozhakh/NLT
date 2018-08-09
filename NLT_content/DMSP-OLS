@@ -1,0 +1,201 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var ntl = ee.ImageCollection("NOAA/DMSP-OLS/NIGHTTIME_LIGHTS"),
+    dmsp = ee.ImageCollection("NOAA/DMSP-OLS/CALIBRATED_LIGHTS_V4");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+var geometry = /* color: #d63000 */ee.Geometry.Polygon(
+        [[[-117.366943359375, 34.17999758688084],
+          [-117.2900390625, 34.38877925439021],
+          [-117.872314453125, 34.84085858477277],
+          [-118.4326171875, 34.56085936708384]]]);
+Map.addLayer(geometry);
+var bgtest = ee.FeatureCollection("users/dkozhakh/usbg10_test");
+Map.addLayer(bgtest,{},'bgtest');
+var dmsp = ee.ImageCollection("NOAA/DMSP-OLS/CALIBRATED_LIGHTS_V4");
+Map.addLayer(dmsp);
+
+// Night Lights Function
+
+function getoutsol(stat,shape,num){
+
+  var sol00 = ee.Image('NOAA/DMSP-OLS/CALIBRATED_LIGHTS_V4/F12-F15_20000103-20001229_V4').select('avg_vis');
+  var sol10 = ee.Image('NOAA/DMSP-OLS/CALIBRATED_LIGHTS_V4/F16_20100111-20101209_V4').select('avg_vis');
+  var sol11 = ee.Image('NOAA/DMSP-OLS/CALIBRATED_LIGHTS_V4/F16_20100111-20110731_V4').select('avg_vis');
+  
+  
+  var satellites = [sol00, sol10, sol11];
+  
+  var satellitesString = ['sol00', 'sol10', 'sol11'];
+  
+  
+  var sol = function(feature) {
+    var newFeature = ee.Feature(feature.geometry(),{'gisjoin':feature.get('GISJOIN')});
+    
+    for (var sat_i = 0; sat_i < satellites.length; sat_i++) {
+     var given_sat = satellites[sat_i];
+     var given_sat_String = satellitesString[sat_i];
+  
+         if (stat=='mean') {
+           var stats = given_sat.reduceRegion(
+            {
+              'reducer': ee.Reducer.mean(),
+              'geometry': feature.geometry(),
+              'maxPixels': 1e11,
+              'scale': sol11.projection().nominalScale()
+            });
+         }
+         
+         if (stat=='median') {
+           var stats1 = given_sat.reduceRegion(
+            {
+             'reducer': ee.Reducer.median(10000, 1, 1000),
+            'geometry': feature.geometry(),
+            'maxPixels': 1e11,
+            'scale': sol11.projection().nominalScale()
+            });
+         }
+         
+      var property_name = 'SOL_' + given_sat_String;
+      newFeature = newFeature.set(property_name,stats.get('avg_vis'));
+    }
+    
+    return newFeature;
+    
+  };
+  
+  
+  var solPerHex = shape.map(sol);
+  var hexdesc = stat + '_sol_usbg' + num + "_y" ;
+
+  Export.table.toDrive({
+    collection: solPerHex,
+    description: hexdesc,
+    folder: 'Earth Engine Team Pull',
+    fileFormat: 'CSV'
+    });
+}
+
+
+
+
+/// Script
+getoutsol('mean',bgtest,0);
+
+/*
+getoutsol('mean',usbg0,0) ;
+getoutsol('mean',usbg1,1) ;
+getoutsol('mean',usbg2,2) ;
+getoutsol('mean',usbg3,3) ;
+getoutsol('mean',usbg4,4) ;
+getoutsol('mean',usbg5,5) ;
+getoutsol('mean',usbg6,6) ;
+getoutsol('mean',usbg7,7) ;
+getoutsol('mean',usbg8,8) ;
+getoutsol('mean',usbg9,9) ;
+getoutsol('mean',usbg10,10) ;
+getoutsol('mean',usbg11,11) ;
+getoutsol('mean',usbg12,12) ;
+getoutsol('mean',usbg13,13) ;
+getoutsol('mean',usbg14,14) ;
+getoutsol('mean',usbg15,15) ;
+getoutsol('mean',usbg16,16) ;
+getoutsol('mean',usbg17,17) ;
+getoutsol('mean',usbg18,18) ;
+getoutsol('mean',usbg19,19) ;
+getoutsol('median',usbg0,0) ;
+getoutsol('median',usbg1,1) ;
+getoutsol('median',usbg2,2) ;
+getoutsol('median',usbg3,3) ;
+getoutsol('median',usbg4,4) ;
+getoutsol('median',usbg5,5) ;
+getoutsol('median',usbg6,6) ;
+getoutsol('median',usbg7,7) ;
+getoutsol('median',usbg8,8) ;
+getoutsol('median',usbg9,9) ;
+getoutsol('median',usbg10,10) ;
+getoutsol('median',usbg11,11) ;
+getoutsol('median',usbg12,12) ;
+getoutsol('median',usbg13,13) ;
+getoutsol('median',usbg14,14) ;
+getoutsol('median',usbg15,15) ;
+getoutsol('median',usbg16,16) ;
+getoutsol('median',usbg17,17) ;
+getoutsol('median',usbg18,18) ;
+getoutsol('median',usbg19,19) ;
+*/
+
+/*
+//getoutnlcd(bgtest,99,0);
+getoutnlcd(usbg0,0,1) ;
+getoutnlcd(usbg0,0,6) ;
+getoutnlcd(usbg0,0,11) ;
+getoutnlcd(usbg1,1,1) ;
+getoutnlcd(usbg1,1,6) ;
+getoutnlcd(usbg1,1,11) ;
+getoutnlcd(usbg2,2,1) ;
+getoutnlcd(usbg2,2,6) ;
+getoutnlcd(usbg2,2,11) ;
+getoutnlcd(usbg3,3,1) ;
+getoutnlcd(usbg3,3,6) ;
+getoutnlcd(usbg3,3,11) ;
+getoutnlcd(usbg4,4,1) ;
+getoutnlcd(usbg4,4,6) ;
+getoutnlcd(usbg4,4,11) ;
+getoutnlcd(usbg5,5,1) ;
+getoutnlcd(usbg5,5,6) ;
+getoutnlcd(usbg5,5,11) ;
+getoutnlcd(usbg6,6,1) ;
+getoutnlcd(usbg6,6,6) ;
+getoutnlcd(usbg6,6,11) ;
+getoutnlcd(usbg7,7,1) ;
+getoutnlcd(usbg7,7,6) ;
+getoutnlcd(usbg7,7,11) ;
+getoutnlcd(usbg8,8,1) ;
+getoutnlcd(usbg8,8,6) ;
+getoutnlcd(usbg8,8,11) ;
+getoutnlcd(usbg9,9,1) ;
+getoutnlcd(usbg9,9,6) ;
+getoutnlcd(usbg9,9,11) ;
+getoutnlcd(usbg10,10,1) ;
+getoutnlcd(usbg10,10,6) ;
+getoutnlcd(usbg10,10,11) ;
+getoutnlcd(usbg11,11,1) ;
+getoutnlcd(usbg11,11,6) ;
+getoutnlcd(usbg11,11,11) ;
+getoutnlcd(usbg12,12,1) ;
+getoutnlcd(usbg12,12,6) ;
+getoutnlcd(usbg12,12,11) ;
+getoutnlcd(usbg13,13,1) ;
+getoutnlcd(usbg13,13,6) ;
+getoutnlcd(usbg13,13,11) ;
+getoutnlcd(usbg14,14,1) ;
+getoutnlcd(usbg14,14,6) ;
+getoutnlcd(usbg14,14,11) ;
+getoutnlcd(usbg15,15,1) ;
+getoutnlcd(usbg15,15,6) ;
+getoutnlcd(usbg15,15,11) ;
+getoutnlcd(usbg16,16,1) ;
+getoutnlcd(usbg16,16,6) ;
+getoutnlcd(usbg16,16,11) ;
+getoutnlcd(usbg17,17,1) ;
+getoutnlcd(usbg17,17,6) ;
+getoutnlcd(usbg17,17,11) ;
+getoutnlcd(usbg18,18,1) ;
+getoutnlcd(usbg18,18,6) ;
+getoutnlcd(usbg18,18,11) ;
+getoutnlcd(usbg19,19,1) ;
+getoutnlcd(usbg19,19,6) ;
+getoutnlcd(usbg19,19,11) ;
+*/
+
+
+
+
+//pullall();
+
+/*getout('pct',usbg0,0,0) ;
+getout('pct',usbg0,0,1) ;
+getout('pct',usbg0,0,2) ;
+getout('pct',usbg0,0,3) ;
+getout('pct',usbg0,0,4) ;
+...
+*/    

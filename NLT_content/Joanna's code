@@ -1,0 +1,55 @@
+/* PROJECT
+    Paper: ?
+    Authors: Gordon, Hanson & Goldblatt, Ran
+    Code: Joanna Valle
+    Date: July, 2018
+DO FILE
+    Purpose: To return the annual sum of nightlight per month US census block groups.
+    Inputs: Polygons of US Census blocks for 2010 & Polygon for US States
+    Outputs: <tables and figures>
+*/
+//Load the night lights rasters.
+var VIIRS_nightlights = ee.ImageCollection("NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG");
+//Specify the rasters by month year
+/// 2014 ////////////////////////////////////////////////////////////////////////////////////////////////////////
+var night2014viirs1 = VIIRS_nightlights.filterDate('2014-01-01', '2014-01-31').select(['avg_rad']).mean();
+var night2014viirs2 = VIIRS_nightlights.filterDate('2014-02-01', '2014-02-28').select(['avg_rad']).mean();
+var night2014viirs3 = VIIRS_nightlights.filterDate('2014-03-01', '2014-03-31').select(['avg_rad']).mean();
+var night2014viirs4 = VIIRS_nightlights.filterDate('2014-04-01', '2014-04-30').select(['avg_rad']).mean();
+var night2014viirs5 = VIIRS_nightlights.filterDate('2014-05-01', '2014-05-31').select(['avg_rad']).mean();
+var night2014viirs6 = VIIRS_nightlights.filterDate('2014-06-01', '2014-06-30').select(['avg_rad']).mean();
+var night2014viirs7 = VIIRS_nightlights.filterDate('2014-07-01', '2014-07-31').select(['avg_rad']).mean();
+var night2014viirs8 = VIIRS_nightlights.filterDate('2014-08-01', '2014-08-31').select(['avg_rad']).mean();
+var night2014viirs9 = VIIRS_nightlights.filterDate('2014-09-01', '2014-09-30').select(['avg_rad']).mean();
+var night2014viirs10 = VIIRS_nightlights.filterDate('2014-10-01', '2014-10-31').select(['avg_rad']).mean();
+var night2014viirs11 = VIIRS_nightlights.filterDate('2014-11-01', '2014-11-30').select(['avg_rad']).mean();
+var night2014viirs12 = VIIRS_nightlights.filterDate('2014-12-01', '2014-12-31').select(['avg_rad']).mean();
+//Define the range of months for the loop 
+var month = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+//Compiles all the flare-adjusted rasters into a single list
+var night2014viirs = [night2014viirs1, night2014viirs2, night2014viirs3, night2014viirs4, night2014viirs5, night2014viirs6, night2014viirs7, night2014viirs8, night2014viirs9, night2014viirs10, night2014viirs11, night2014viirs12];
+///Code will draw polygons around and calculate the sum of lights (per month) for each block group in this table.*/
+var bgtest = ee.FeatureCollection("users/dkozhakh/usbg10_test");
+print (bgtest);
+Map.addLayer (bgtest);
+var ntlperblock2014 = function(feature){
+    var newFeature2014 = ee.Feature(feature.geometry(),{'name':feature.get('name')});
+    
+  for (var month_i = 0; month_i < month.length; month_i++) {
+    var stats2014 = night2014viirs[month_i].reduceRegion(
+      {
+        'reducer': ee.Reducer.sum(),
+        'geometry': feature.geometry(),
+        'maxPixels': 1e15,
+        'scale': 500
+      });
+    
+    var property_name2014 = '2014month' + month[month_i];
+    newFeature2014  = newFeature2014.set(property_name2014, stats2014.get('avg_rad'));
+  }
+  return newFeature2014;
+};
+//Create the table of sum values
+var bgtest_NTLVIIRS2014 = bgtest.map(ntlperblock2014);
+//Export to google drive for analysis in R or Stata.
+Export.table.toDrive({collection: bgtest_NTLVIIRS2014, description: "bgtest_0_NTLVIIRS2014"});

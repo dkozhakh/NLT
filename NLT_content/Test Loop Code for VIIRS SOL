@@ -1,0 +1,142 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var viirs_all = ee.ImageCollection("NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG"),
+    viirs_may = ee.Image("NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG/20180501");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+var bgtest = ee.FeatureCollection("users/dkozhakh/usbg10_test");
+
+Map.addLayer(bgtest,{},'bgtest');
+print (bgtest);
+
+
+// Night Lights Function
+
+//Function
+var summarize_viirs = function(feature){
+
+  var viirs_all = ee.ImageCollection('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG');
+
+  var summarize_viirs_year = function(image, feat){
+    feat = ee.Feature(feat);
+    image = ee.Image(image);
+    var id = image.id();
+
+    var viirs_rad = image.select('avg_rad');
+  
+
+    // Average VIIRS Radiance
+    var feature_rad = viirs_rad.reduceRegion({
+      geometry: feature.geometry(),
+      reducer: ee.Reducer.sum(),
+      scale: 500,
+      maxPixels: 1e15
+      });
+
+
+    var mean_rad = feature_rad.get('avg_rad');
+
+    var year_month = ee.Number(id);
+    mean_rad = ee.Number(mean_rad);
+    var mean_rad_name = ee.String("viirs_rad_mean_").cat(year_month);
+    return feat.set(mean_rad_name, mean_rad);
+
+  };  
+
+  var new_feature = ee.Feature(viirs_all.iterate(summarize_viirs_year, 
+      feature));
+
+  return new_feature;
+
+};
+
+//=====================================================================
+//Apply Function
+var output = bgtest.map(summarize_viirs);
+
+Export.table.toDrive({
+  collection: output,
+  description: 'loop_code_test_1e15',
+  fileFormat: 'CSV'
+});
+
+//=====================================================================
+/*//Testing the code
+  var viirs_may = function(feature){
+    
+var viirs_rad = viirs_may.select('avg_rad');
+
+    // Average VIIRS Radiance
+    var feature_rad = viirs_rad.reduceRegion({
+      geometry: feature.geometry(),
+      reducer: ee.Reducer.mean(),
+      scale: 500
+      });
+
+
+    var mean_rad = feature_rad.get('avg_rad');
+
+
+  var new_feature = ee.Feature(viirs_may.iterate( 
+      feature));
+      return new_feature;
+
+};
+*/
+
+/*
+function getoutsol(stat,shape,num){
+
+  var sol00 = ee.Image('NOAA/DMSP-OLS/CALIBRATED_LIGHTS_V4/F12-F15_20000103-20001229_V4').select('avg_vis');
+  var sol10 = ee.Image('NOAA/DMSP-OLS/CALIBRATED_LIGHTS_V4/F16_20100111-20101209_V4').select('avg_vis');
+  var sol11 = ee.Image('NOAA/DMSP-OLS/CALIBRATED_LIGHTS_V4/F16_20100111-20110731_V4').select('avg_vis');
+  
+  
+  var satellites = [sol00, sol10, sol11];
+  
+  var satellitesString = ['sol00', 'sol10', 'sol11'];
+  
+  
+
+  var sol = function(feature) {
+    var newFeature = ee.Feature(feature.geometry(),{'gisjoin':feature.get('GISJOIN')});
+    
+    for (var sat_i = 0; sat_i < satellites.length; sat_i++) {
+     var given_sat = satellites[sat_i];
+     var given_sat_String = satellitesString[sat_i];
+  
+         if (stat=='mean') {
+           var stats = given_sat.reduceRegion(
+            {
+              'reducer': ee.Reducer.mean(),
+              'geometry': feature.geometry(),
+              'maxPixels': 1e11,
+              'scale': sol11.projection().nominalScale()
+            });
+         }
+      var property_name = 'SOL_' + given_sat_String;
+      newFeature = newFeature.set(property_name,stats.get('avg_vis'));
+    }
+    
+    return newFeature;
+    
+  };
+  
+  
+  var solPerHex = shape.map(sol);
+  var hexdesc = stat + '_sol_usbg' + num + "_y" ;
+
+  Export.table.toDrive({
+    collection: solPerHex,
+    description: hexdesc,
+    folder: 'Earth Engine Team Pull',
+    fileFormat: 'CSV'
+    });
+}
+
+
+
+
+/// Script
+getoutsol('mean',bgtest,0);
+*/
+
+  

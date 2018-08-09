@@ -1,0 +1,57 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var viirs_all = ee.ImageCollection("NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG"),
+    image = ee.Image("NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG/20170701");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+Map.addLayer(image.mask(image));
+var zero_values = ee.FeatureCollection("users/dkozhakh/zero_values");
+Map.addLayer(zero_values,{},'zero_values');
+
+// Night Lights Function
+
+//Function
+var summarize_viirs = function(feature){
+
+  var viirs_all = ee.ImageCollection('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG');
+
+  var summarize_viirs_year = function(image, feat){
+    feat = ee.Feature(feat);
+    image = ee.Image(image);
+    var id = image.id();
+
+    var viirs_rad = image.select('avg_rad');
+  
+
+    // Average VIIRS Radiance
+    var feature_rad = viirs_rad.reduceRegion({
+      geometry: feature.geometry(),
+      reducer: ee.Reducer.sum(),
+      scale: 100,
+      maxPixels: 1e15
+      });
+
+
+    var sum_rad = feature_rad.get('avg_rad');
+
+    var year_month = ee.Number(id);
+    sum_rad = ee.Number(sum_rad);
+    var sum_rad_name = ee.String("viirs_rad_sum_").cat(year_month);
+    return feat.set(sum_rad_name, sum_rad);
+
+  };  
+
+  var new_feature = ee.Feature(viirs_all.iterate(summarize_viirs_year, 
+      feature));
+
+  return new_feature;
+
+};
+
+//=====================================================================
+//Apply Function
+var output = zero_values.map(summarize_viirs);
+
+Export.table.toDrive({
+  collection: output,
+  description: 'zero_values_1',
+  fileFormat: 'CSV'
+});

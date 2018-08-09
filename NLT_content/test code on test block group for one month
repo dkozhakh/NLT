@@ -1,0 +1,32 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var viirs_all = ee.ImageCollection("NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG"),
+    viirs_may = ee.Image("NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG/20180501"),
+    geometry = /* color: #d63000 */ee.Geometry.Point([-122.113037109375, 37.69251435532741]),
+    viirs_may14 = ee.Image("NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG/20140501");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+var bgtest = ee.FeatureCollection("users/dkozhakh/usbg10_test");
+Map.addLayer (bgtest);
+print(bgtest);
+var av_rad = viirs_may14.select('avg_rad');
+
+var calculatesol = function(feature) 
+{
+  var sol_pergroup = av_rad.reduceRegion
+  ({
+  'reducer': ee.Reducer.sum(),
+  'scale':500,
+  'geometry': feature.geometry(),
+  'maxPixels': 1e15
+  });
+ var oneblockgroup = feature.set('sol', sol_pergroup);
+  return oneblockgroup;
+};
+var addedSOL = bgtest.map(calculatesol);
+
+print(addedSOL);
+
+Export.table.toDrive({
+  collection: addedSOL,
+  description: 'checking_code_test_may14',
+  fileFormat: 'CSV'
+});
